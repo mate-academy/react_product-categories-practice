@@ -1,11 +1,64 @@
-import React from 'react';
+import React, { useState } from 'react';
+import cn from 'classnames';
+
+import usersFromServer from './api/users';
+import productsFromServer from './api/products';
+import categoriesFromServer from './api/categories';
+
 import './App.scss';
 
-// import usersFromServer from './api/users';
-// import productsFromServer from './api/products';
-// import categoriesFromServer from './api/categories';
+interface Product {
+  id: number;
+  name: string;
+  categoryId: number;
+}
+
+interface User {
+  id: number;
+  name: string;
+  sex: string;
+}
+
+interface Category {
+  id: number;
+  title: string;
+  icon: string;
+  ownerId: number;
+}
+
+interface ProductWithUserAndCategory extends Product {
+  category?: Category;
+  user?: User;
+}
+
+const products = productsFromServer
+  .map(product => ({
+    ...product,
+    category: categoriesFromServer.find(
+      category => category.id === product.categoryId,
+    ),
+    user: usersFromServer.find(
+      user => {
+        const foundCategory = categoriesFromServer.find(
+          category => category.id === product.categoryId,
+        );
+
+        return foundCategory?.ownerId === user.id;
+      },
+    ),
+  }));
 
 export const App: React.FC = () => {
+  const [productsList,
+    setProductsList
+  ] = useState<ProductWithUserAndCategory[]>(products);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const selectUser = (user: User) => {
+    setSelectedUser(user);
+    setProductsList(products.filter(product => product.user === user));
+  };
+
   return (
     <div className="section">
       <div className="container">
@@ -19,31 +72,24 @@ export const App: React.FC = () => {
               <a
                 data-cy="FilterAllUsers"
                 href="#/"
+                className={cn({ 'is-active': !selectedUser })}
               >
                 All
               </a>
 
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 1
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-                className="is-active"
-              >
-                User 2
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 3
-              </a>
+              {usersFromServer.map(user => (
+                <a
+                  key={user.id}
+                  data-cy="FilterUser"
+                  href="#/"
+                  className={cn({ 'is-active': selectedUser === user })}
+                  onClick={() => {
+                    selectUser(user);
+                  }}
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -80,36 +126,16 @@ export const App: React.FC = () => {
                 All
               </a>
 
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1 is-info"
-                href="#/"
-              >
-                Category 1
-              </a>
-
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1"
-                href="#/"
-              >
-                Category 2
-              </a>
-
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1 is-info"
-                href="#/"
-              >
-                Category 3
-              </a>
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1"
-                href="#/"
-              >
-                Category 4
-              </a>
+              {categoriesFromServer.map(category => (
+                <a
+                  key={category.id}
+                  data-cy="Category"
+                  className="button mr-2 my-1 is-info"
+                  href="#/"
+                >
+                  {category.title}
+                </a>
+              ))}
             </div>
 
             <div className="panel-block">
@@ -126,116 +152,98 @@ export const App: React.FC = () => {
         </div>
 
         <div className="box table-container">
-          <p data-cy="NoMatchingMessage">
-            No products matching selected criteria
-          </p>
+          {!productsList.length
+            ? (
+              <p data-cy="NoMatchingMessage">
+                No products matching selected criteria
+              </p>
+            )
+            : (
+              <table
+                data-cy="ProductTable"
+                className="table is-striped is-narrow is-fullwidth"
+              >
+                <thead>
+                  <tr>
+                    <th>
+                      <span className="is-flex is-flex-wrap-nowrap">
+                        ID
 
-          <table
-            data-cy="ProductTable"
-            className="table is-striped is-narrow is-fullwidth"
-          >
-            <thead>
-              <tr>
-                <th>
-                  <span className="is-flex is-flex-wrap-nowrap">
-                    ID
-
-                    <a href="#/">
-                      <span className="icon">
-                        <i data-cy="SortIcon" className="fas fa-sort" />
+                        <a href="#/">
+                          <span className="icon">
+                            <i data-cy="SortIcon" className="fas fa-sort" />
+                          </span>
+                        </a>
                       </span>
-                    </a>
-                  </span>
-                </th>
+                    </th>
 
-                <th>
-                  <span className="is-flex is-flex-wrap-nowrap">
-                    Product
+                    <th>
+                      <span className="is-flex is-flex-wrap-nowrap">
+                        Product
 
-                    <a href="#/">
-                      <span className="icon">
-                        <i data-cy="SortIcon" className="fas fa-sort-down" />
+                        <a href="#/">
+                          <span className="icon">
+                            <i
+                              data-cy="SortIcon"
+                              className="fas fa-sort-down"
+                            />
+                          </span>
+                        </a>
                       </span>
-                    </a>
-                  </span>
-                </th>
+                    </th>
 
-                <th>
-                  <span className="is-flex is-flex-wrap-nowrap">
-                    Category
+                    <th>
+                      <span className="is-flex is-flex-wrap-nowrap">
+                        Category
 
-                    <a href="#/">
-                      <span className="icon">
-                        <i data-cy="SortIcon" className="fas fa-sort-up" />
+                        <a href="#/">
+                          <span className="icon">
+                            <i data-cy="SortIcon" className="fas fa-sort-up" />
+                          </span>
+                        </a>
                       </span>
-                    </a>
-                  </span>
-                </th>
+                    </th>
 
-                <th>
-                  <span className="is-flex is-flex-wrap-nowrap">
-                    User
+                    <th>
+                      <span className="is-flex is-flex-wrap-nowrap">
+                        User
 
-                    <a href="#/">
-                      <span className="icon">
-                        <i data-cy="SortIcon" className="fas fa-sort" />
+                        <a href="#/">
+                          <span className="icon">
+                            <i data-cy="SortIcon" className="fas fa-sort" />
+                          </span>
+                        </a>
                       </span>
-                    </a>
-                  </span>
-                </th>
-              </tr>
-            </thead>
+                    </th>
+                  </tr>
+                </thead>
 
-            <tbody>
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  1
-                </td>
+                <tbody>
+                  {productsList.map(product => (
+                    <tr key={product.id} data-cy="Product">
+                      <td className="has-text-weight-bold" data-cy="ProductId">
+                        {product.id}
+                      </td>
 
-                <td data-cy="ProductName">Milk</td>
-                <td data-cy="ProductCategory">🍺 - Drinks</td>
+                      <td data-cy="ProductName">{product.name}</td>
+                      <td data-cy="ProductCategory">
+                        {`${product.category?.icon} - ${product.category?.title}`}
+                      </td>
 
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Max
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  2
-                </td>
-
-                <td data-cy="ProductName">Bread</td>
-                <td data-cy="ProductCategory">🍞 - Grocery</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-danger"
-                >
-                  Anna
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  3
-                </td>
-
-                <td data-cy="ProductName">iPhone</td>
-                <td data-cy="ProductCategory">💻 - Electronics</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Roma
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                      <td
+                        data-cy="ProductUser"
+                        className={cn({
+                          'has-text-link': product.user?.sex === 'm',
+                          'has-text-danger': product.user?.sex === 'f',
+                        })}
+                      >
+                        {product.user?.name}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
         </div>
       </div>
     </div>
