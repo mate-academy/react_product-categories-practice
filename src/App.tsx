@@ -1,11 +1,66 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.scss';
+import classNames from 'classnames';
 
-// import usersFromServer from './api/users';
-// import productsFromServer from './api/products';
-// import categoriesFromServer from './api/categories';
+import usersFromServer from './api/users';
+import productsFromServer from './api/products';
+import categoriesFromServer from './api/categories';
+
+export interface User {
+  id: number,
+  name: string,
+  sex: string,
+}
+
+export interface Product {
+  id: number,
+  name: string,
+  categoryId: number,
+  category: Category | null,
+}
+
+export interface Category {
+  id: number,
+  title: string,
+  icon: string,
+  ownerId: number,
+  user: User | null,
+}
+
+function getUser(ownerId: number): User | null {
+  const foundUser = usersFromServer.find(user => user.id === ownerId);
+
+  return foundUser || null;
+}
+
+export const categories: Category[] = categoriesFromServer.map(category => ({
+  ...category,
+  user: getUser(category.ownerId),
+}));
+
+function getCategory(categoryId: number): Category | null {
+  const foundCategory = categories
+    .find(category => category.id === categoryId);
+
+  return foundCategory || null;
+}
+
+export const products: Product[] = productsFromServer.map(product => ({
+  ...product,
+  category: getCategory(product.categoryId),
+}));
 
 export const App: React.FC = () => {
+  const [query, setQuery] = useState('');
+
+  const visibleProducts = products.filter(({ name }) => {
+    const includedInName = name
+      .toLowerCase()
+      .includes(query.toLowerCase());
+
+    return includedInName;
+  });
+
   return (
     <div className="section">
       <div className="container">
@@ -16,34 +71,21 @@ export const App: React.FC = () => {
             <p className="panel-heading">Filters</p>
 
             <p className="panel-tabs has-text-weight-bold">
+
               <a
                 data-cy="FilterAllUsers"
                 href="#/"
               >
                 All
               </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 1
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-                className="is-active"
-              >
-                User 2
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 3
-              </a>
+              {usersFromServer.map(user => (
+                <a
+                  data-cy="FilterUser"
+                  href="#/"
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -53,7 +95,9 @@ export const App: React.FC = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  // value="qwe"
+                  value={query}
+                  onChange={(event => setQuery(event.target.value))}
                 />
 
                 <span className="icon is-left">
@@ -67,6 +111,7 @@ export const App: React.FC = () => {
                     type="button"
                     className="delete"
                   />
+
                 </span>
               </p>
             </div>
@@ -126,9 +171,12 @@ export const App: React.FC = () => {
         </div>
 
         <div className="box table-container">
-          <p data-cy="NoMatchingMessage">
-            No products matching selected criteria
-          </p>
+          {(!visibleProducts.length
+            && (
+              <p data-cy="NoMatchingMessage">
+                No products matching selected criteria
+              </p>
+            ))}
 
           <table
             data-cy="ProductTable"
@@ -187,53 +235,32 @@ export const App: React.FC = () => {
             </thead>
 
             <tbody>
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  1
-                </td>
+              {visibleProducts.map(product => (
+                <tr data-cy="Product">
+                  <td className="has-text-weight-bold" data-cy="ProductId">
+                    {product.id}
+                  </td>
 
-                <td data-cy="ProductName">Milk</td>
-                <td data-cy="ProductCategory">🍺 - Drinks</td>
+                  <td data-cy="ProductName">{product.name}</td>
+                  <td data-cy="ProductCategory">
+                    {product.category?.icon}
+                    {' '}
+                    -
+                    {' '}
+                    {product.category?.title}
+                  </td>
 
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Max
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  2
-                </td>
-
-                <td data-cy="ProductName">Bread</td>
-                <td data-cy="ProductCategory">🍞 - Grocery</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-danger"
-                >
-                  Anna
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  3
-                </td>
-
-                <td data-cy="ProductName">iPhone</td>
-                <td data-cy="ProductCategory">💻 - Electronics</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Roma
-                </td>
-              </tr>
+                  <td
+                    data-cy="ProductUser"
+                    className={classNames('has-text-link',
+                      {
+                        'has-text-danger': product.category?.user?.sex === 'f',
+                      })}
+                  >
+                    {product.category?.user?.name}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
