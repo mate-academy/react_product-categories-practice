@@ -4,3 +4,4 @@ export default [
   { id: 3, name: 'Max', sex: 'm' },
   { id: 4, name: 'John', sex: 'm' },
 ];
+//
