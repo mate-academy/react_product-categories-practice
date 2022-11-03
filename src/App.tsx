@@ -1,11 +1,69 @@
-import React from 'react';
+import React, { useState } from 'react';
+import classNames from 'classnames';
+import { Product } from './types/Product';
+import { Category } from './types/Category';
+import { User } from './types/User';
 import './App.scss';
 
-// import usersFromServer from './api/users';
-// import productsFromServer from './api/products';
-// import categoriesFromServer from './api/categories';
+import productsFromServer from './api/products';
+import usersFromServer from './api/users';
+import categoriesFromServer from './api/categories';
+
+function getCategory(categoryId: number): Category | null {
+  const foundCategory = categoriesFromServer
+    .find(category => category.id === categoryId);
+
+  return foundCategory || null;
+}
+
+function getUser(categoryId: number): User | null {
+  const userId = getCategory(categoryId)?.ownerId;
+
+  const foundedUser = usersFromServer
+    .find(user => user?.id === userId);
+
+  return foundedUser || null;
+}
+
+const productsWithOuterProps = productsFromServer.map(product => ({
+  ...product,
+  category: getCategory(product.categoryId),
+  userName: getUser(product.categoryId)?.name,
+  userSex: getUser(product.categoryId)?.sex,
+}));
 
 export const App: React.FC = () => {
+  const [products, setProducts] = useState(productsWithOuterProps);
+  const [query, setQuery] = useState('');
+
+  const productList = productsWithOuterProps
+    .filter(i => {
+      return i.name.toLowerCase().includes(query.toLowerCase())
+        || i.id.toString().includes(query);
+    })
+    .map(product => (
+      <tr data-cy="Product">
+        <td className="has-text-weight-bold" data-cy="ProductId">
+          {product.id}
+        </td>
+
+        <td data-cy="ProductName">{product.name}</td>
+        <td data-cy="ProductCategory">
+          {`${product.category?.icon} - ${product.category?.title}`}
+        </td>
+
+        <td
+          data-cy="ProductUser"
+          className={classNames(
+            { 'has-text-link': product.userSex === 'm' },
+            { 'has-text-success': product.userSex === 'f' },
+          )}
+        >
+          {product.userName}
+        </td>
+      </tr>
+    ));
+
   return (
     <div className="section">
       <div className="container">
@@ -53,7 +111,8 @@ export const App: React.FC = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  value={query}
+                  onChange={event => setQuery(event.target.value)}
                 />
 
                 <span className="icon is-left">
@@ -126,9 +185,11 @@ export const App: React.FC = () => {
         </div>
 
         <div className="box table-container">
-          <p data-cy="NoMatchingMessage">
-            No products matching selected criteria
-          </p>
+          {!productList.length && (
+            <p data-cy="NoMatchingMessage">
+              No products matching selected criteria
+            </p>
+          )}
 
           <table
             data-cy="ProductTable"
@@ -187,53 +248,7 @@ export const App: React.FC = () => {
             </thead>
 
             <tbody>
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  1
-                </td>
-
-                <td data-cy="ProductName">Milk</td>
-                <td data-cy="ProductCategory">🍺 - Drinks</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Max
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  2
-                </td>
-
-                <td data-cy="ProductName">Bread</td>
-                <td data-cy="ProductCategory">🍞 - Grocery</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-danger"
-                >
-                  Anna
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  3
-                </td>
-
-                <td data-cy="ProductName">iPhone</td>
-                <td data-cy="ProductCategory">💻 - Electronics</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Roma
-                </td>
-              </tr>
+              {productList.length > 0 && productList}
             </tbody>
           </table>
         </div>
