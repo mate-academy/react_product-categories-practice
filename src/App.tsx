@@ -106,7 +106,7 @@ export const App: React.FC = () => {
                 <span className="icon is-left">
                   <i className="fas fa-search" aria-hidden="true" />
                 </span>
-                
+
                 {query && (
                   <span className="icon is-right">
                     {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
