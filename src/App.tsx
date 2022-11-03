@@ -1,9 +1,45 @@
 import React from 'react';
 import './App.scss';
 
-// import usersFromServer from './api/users';
-// import productsFromServer from './api/products';
-// import categoriesFromServer from './api/categories';
+import usersFromServer from './api/users';
+import productsFromServer from './api/products';
+import categoriesFromServer from './api/categories';
+import { Category } from './types/Category';
+import { User } from './types/User';
+import { FullProduct, Product } from './types/Product';
+import { FullCategory } from './types/FullCategory';
+import { ProductsList } from './components/ProductsList';
+
+const prepareCategories = (
+  categories: Category[],
+  users: User[],
+): FullCategory[] => {
+  return categories.map((category) => ({
+    ...category,
+    user: users.find((user) => user.id === category.ownerId) || null,
+  }));
+};
+
+const preparedCategories = prepareCategories(
+  categoriesFromServer,
+  usersFromServer,
+);
+
+const prepareProducts = (
+  products: Product[],
+  categories: FullCategory[],
+): FullProduct[] => {
+  return products.map(product => ({
+    ...product,
+    category: categories
+      .find(category => product.categoryId === category.id) || null,
+  }));
+};
+
+const preparedProducts = prepareProducts(
+  productsFromServer,
+  preparedCategories,
+);
 
 export const App: React.FC = () => {
   return (
@@ -22,28 +58,15 @@ export const App: React.FC = () => {
               >
                 All
               </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 1
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-                className="is-active"
-              >
-                User 2
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 3
-              </a>
+              {usersFromServer.map(user => (
+                <a
+                  data-cy="FilterUser"
+                  href="#/"
+                  key={user.id}
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -79,30 +102,17 @@ export const App: React.FC = () => {
               >
                 All
               </a>
+              {preparedCategories.map(category => (
+                <a
+                  data-cy="Category"
+                  className="button mr-2 my-1 is-info"
+                  href="#/"
+                  key={category.id}
+                >
+                  {`Category ${category.title}`}
+                </a>
+              ))}
 
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1 is-info"
-                href="#/"
-              >
-                Category 1
-              </a>
-
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1"
-                href="#/"
-              >
-                Category 2
-              </a>
-
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1 is-info"
-                href="#/"
-              >
-                Category 3
-              </a>
               <a
                 data-cy="Category"
                 className="button mr-2 my-1"
@@ -122,9 +132,13 @@ export const App: React.FC = () => {
                 Reset all filters
               </a>
             </div>
+
           </nav>
         </div>
 
+        <ProductsList
+          products={preparedProducts}
+        />
         <div className="box table-container">
           <p data-cy="NoMatchingMessage">
             No products matching selected criteria
