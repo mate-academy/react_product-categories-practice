@@ -1,11 +1,97 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.scss';
+import classNames from 'classnames';
+import usersFromServer from './api/users';
+import productsFromServer from './api/products';
+import categoriesFromServer from './api/categories';
 
-// import usersFromServer from './api/users';
-// import productsFromServer from './api/products';
-// import categoriesFromServer from './api/categories';
+interface User {
+  id: number,
+  name: string,
+  sex: string,
+}
+
+interface Category {
+  id: number,
+  title: string,
+  icon: string,
+  ownerId: number,
+}
+
+interface Product {
+  id: number,
+  name: string,
+  categoryId: number,
+}
+
+interface ExtendedProduct extends Product {
+  user?: User,
+  category?: Category,
+}
+
+const extendProduct = (
+  users: User[],
+  categories: Category[],
+  products: Product[],
+): ExtendedProduct[] => {
+  return products.map(product => {
+    const categoryFromProduct = product.categoryId;
+    const userFromCategory = categories
+      .find(category => category.id === categoryFromProduct);
+    const userFromCategoryId = userFromCategory?.ownerId;
+    const userById = users.find(user => user.id === userFromCategoryId);
+
+    return ({
+      ...product,
+      category: categories.find(category => category.id === product.categoryId),
+      user: userById,
+    });
+  });
+};
+
+const extendedProducts = extendProduct(
+  usersFromServer,
+  categoriesFromServer,
+  productsFromServer,
+);
 
 export const App: React.FC = () => {
+  const [selectedUser, setSelectedUser] = useState<number | null>(null);
+  // eslint-disable-next-line max-len
+  const [visibleProducts, setVisibleProducts] = useState<ExtendedProduct[]>(extendedProducts);
+  const [query, setQuery] = useState('');
+
+  const showAllProducts = () => {
+    setVisibleProducts(extendedProducts);
+  };
+
+  const filterProductsByUser = (user?: User) => {
+    const productsForShow = extendedProducts
+      .filter(product => product.category?.ownerId === user?.id);
+
+    setVisibleProducts(productsForShow);
+  };
+
+  const filterProductsByQuery = (input: string) => {
+    const productsForShow = visibleProducts
+      // eslint-disable-next-line max-len
+      .filter(product => product.name.toLowerCase().includes(input.toLowerCase()));
+
+    setVisibleProducts(productsForShow);
+  };
+
+  const resetSearch = () => {
+    const productsForShow = visibleProducts;
+
+    setVisibleProducts(productsForShow);
+  };
+
+  useEffect(() => {
+    filterProductsByUser(selectedUser);
+    filterProductsByQuery(query);
+    resetSearch();
+  }, [query, selectedUser]);
+
   return (
     <div className="section">
       <div className="container">
@@ -19,31 +105,33 @@ export const App: React.FC = () => {
               <a
                 data-cy="FilterAllUsers"
                 href="#/"
+                className={classNames({
+                  'is-active': selectedUser === null,
+                })}
+                onClick={() => {
+                  setSelectedUser(null);
+                  showAllProducts();
+                }}
               >
                 All
               </a>
 
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 1
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-                className="is-active"
-              >
-                User 2
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 3
-              </a>
+              {usersFromServer.map(user => (
+                <a
+                  data-cy="FilterUser"
+                  href="#/"
+                  key={user.id}
+                  className={classNames({
+                    'is-active': user.id === selectedUser,
+                  })}
+                  onClick={() => {
+                    setSelectedUser(user.id);
+                    filterProductsByUser(user);
+                  }}
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -53,21 +141,31 @@ export const App: React.FC = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  value={query}
+                  onChange={event => {
+                    setQuery(event.target.value);
+                    filterProductsByQuery(event.target.value);
+                  }}
                 />
 
                 <span className="icon is-left">
                   <i className="fas fa-search" aria-hidden="true" />
                 </span>
 
-                <span className="icon is-right">
-                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <button
-                    data-cy="ClearButton"
-                    type="button"
-                    className="delete"
-                  />
-                </span>
+                {query && (
+                  <span className="icon is-right">
+                    {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                    <button
+                      data-cy="ClearButton"
+                      type="button"
+                      className="delete"
+                      onClick={() => {
+                        setQuery('');
+                        resetSearch();
+                      }}
+                    />
+                  </span>
+                )}
               </p>
             </div>
 
@@ -187,53 +285,30 @@ export const App: React.FC = () => {
             </thead>
 
             <tbody>
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  1
-                </td>
+              {
+                visibleProducts.map(product => (
+                  <tr data-cy="Product" key={product.id}>
+                    <td className="has-text-weight-bold" data-cy="ProductId">
+                      {product.id}
+                    </td>
 
-                <td data-cy="ProductName">Milk</td>
-                <td data-cy="ProductCategory">🍺 - Drinks</td>
+                    <td data-cy="ProductName">{product.name}</td>
+                    <td data-cy="ProductCategory">
+                      {`${product.category?.icon} - ${product.category?.title}`}
+                    </td>
 
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Max
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  2
-                </td>
-
-                <td data-cy="ProductName">Bread</td>
-                <td data-cy="ProductCategory">🍞 - Grocery</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-danger"
-                >
-                  Anna
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  3
-                </td>
-
-                <td data-cy="ProductName">iPhone</td>
-                <td data-cy="ProductCategory">💻 - Electronics</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Roma
-                </td>
-              </tr>
+                    <td
+                      data-cy="ProductUser"
+                      className={classNames({
+                        'has-text-link': product.user?.sex === 'm',
+                        'has-text-danger': product.user?.sex === 'f',
+                      })}
+                    >
+                      {product.user?.name}
+                    </td>
+                  </tr>
+                ))
+              }
             </tbody>
           </table>
         </div>
