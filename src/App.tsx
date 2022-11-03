@@ -1,11 +1,88 @@
-import React from 'react';
+import { useState } from 'react';
 import './App.scss';
+import classNames from 'classnames';
 
-// import usersFromServer from './api/users';
-// import productsFromServer from './api/products';
-// import categoriesFromServer from './api/categories';
+import usersFromServer from './api/users';
+import productsFromServer from './api/products';
+import categoriesFromServer from './api/categories';
+
+// import { Product } from './types/Product';
+import { User } from './types/User';
+// import { Categories } from './types/Categories';
+
+function findUser(userId:number | undefined):User | null {
+  const foundUser = usersFromServer.find(user => user.id === userId);
+
+  return foundUser || null;
+}
+
+function findCategory(Id:number): any {
+  const foundCategory = categoriesFromServer.find(categories => (
+    categories.id === Id));
+
+  const foundCategoiesAndUser = {
+    ...foundCategory,
+    user: findUser(foundCategory?.ownerId),
+  };
+
+  return foundCategoiesAndUser || null;
+}
+
+const productList = productsFromServer.map((product) => {
+  return {
+    ...product,
+    category: findCategory(product.categoryId),
+  };
+});
 
 export const App: React.FC = () => {
+  // const [filtredList, setFiltredList] = useState(productList);
+  const [sortType, setSortType] = useState([0]);
+  const [sortByUsers, setSortByUsers] = useState([0]);
+
+  const heandlerAll = () => {
+    if (sortType.includes(0)) {
+      setSortType(current => (current.filter(typ => (
+        typ !== 0
+      ))));
+    } else {
+      setSortType([0]);
+    }
+  };
+
+  const handlerSortType = (type:number) => {
+    if (sortType.includes(type)) {
+      setSortType(current => (current.filter(typ => (
+        typ !== type
+      ))));
+    } else {
+      setSortType(current => (
+        [...current, type]
+      ));
+    }
+  };
+
+  const handlerSortByUsers = (type:number) => {
+    if (sortByUsers.includes(type)) {
+      setSortByUsers(current => (current.filter(typ => (
+        typ !== type
+      ))));
+    } else {
+      setSortByUsers(current => (
+        [...current, type]
+      ));
+    }
+  };
+
+  // const filtedListByUser = productList.filter(product => (
+  //   sortType.includes(product.category.ownerId)));
+
+  const filtredList = sortType.includes(0)
+    ? productList
+    : productList.filter(product => {
+      return sortType.includes(product.categoryId);
+    });
+
   return (
     <div className="section">
       <div className="container">
@@ -19,31 +96,20 @@ export const App: React.FC = () => {
               <a
                 data-cy="FilterAllUsers"
                 href="#/"
+                onClick={heandlerAll}
               >
                 All
               </a>
 
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 1
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-                className="is-active"
-              >
-                User 2
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 3
-              </a>
+              {usersFromServer.map(user => (
+                <a
+                  data-cy="FilterUser"
+                  href="#/"
+                  onClick={() => handlerSortByUsers(user.id)}
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -76,40 +142,23 @@ export const App: React.FC = () => {
                 href="#/"
                 data-cy="AllCategories"
                 className="button is-success mr-6 is-outlined"
+                onClick={() => handlerSortType(0)}
               >
                 All
               </a>
 
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1 is-info"
-                href="#/"
-              >
-                Category 1
-              </a>
-
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1"
-                href="#/"
-              >
-                Category 2
-              </a>
-
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1 is-info"
-                href="#/"
-              >
-                Category 3
-              </a>
-              <a
-                data-cy="Category"
-                className="button mr-2 my-1"
-                href="#/"
-              >
-                Category 4
-              </a>
+              {categoriesFromServer.map(categories => (
+                <a
+                  data-cy="Category"
+                  className={classNames('button', {
+                    'is-active': sortType.includes(categories.id),
+                  })}
+                  onClick={() => handlerSortType(categories.id)}
+                  href="#/"
+                >
+                  {categories.title}
+                </a>
+              ))}
             </div>
 
             <div className="panel-block">
@@ -187,53 +236,28 @@ export const App: React.FC = () => {
             </thead>
 
             <tbody>
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  1
-                </td>
+              {filtredList.map(products => (
+                <tr data-cy="Product">
+                  <td className="has-text-weight-bold" data-cy="ProductId">
+                    {products.id}
+                  </td>
 
-                <td data-cy="ProductName">Milk</td>
-                <td data-cy="ProductCategory">🍺 - Drinks</td>
+                  <td data-cy="ProductName">{products.name}</td>
+                  <td data-cy="ProductCategory">
+                    {`${products.category.icon} - ${products.category.title}`}
+                  </td>
 
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Max
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  2
-                </td>
-
-                <td data-cy="ProductName">Bread</td>
-                <td data-cy="ProductCategory">🍞 - Grocery</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-danger"
-                >
-                  Anna
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  3
-                </td>
-
-                <td data-cy="ProductName">iPhone</td>
-                <td data-cy="ProductCategory">💻 - Electronics</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Roma
-                </td>
-              </tr>
+                  <td
+                    data-cy="ProductUser"
+                    className={classNames({
+                      'has-text-danger': products.category.user.sex === 'f',
+                      'has-text-link': products.category.user.sex === 'm',
+                    })}
+                  >
+                    {products.category.user.name}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
