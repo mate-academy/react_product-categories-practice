@@ -2,7 +2,7 @@
 
 > Here is [the working version](https://mate-academy.github.io/react_product-categories-practice/)
 
-You are given markup for a table of products and 3 arrays. 
+You are given markup for a table of products and 3 arrays.
 Implement as much options below as you can:
 
 1. Render products in a table with id, name, category and an owner.
@@ -32,4 +32,4 @@ Implement as much options below as you can:
 
 ## Your DEMO LINK
 
-- [DEMO LINK](https://<your-account>.github.io/react_product-categories-practice/)
+- [DEMO LINK](https://Arsen-Shpak.github.io/react_product-categories-practice/)
