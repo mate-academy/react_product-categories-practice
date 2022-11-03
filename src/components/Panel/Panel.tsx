@@ -8,6 +8,7 @@ type Props = {
   setSelectedUser: (value: Users | null) => void;
   selectedUser: Users | null;
   setQuery: (value: string) => void;
+  setSelectedCategory: (value: number | null) => void;
 };
 
 export const Panel: FC<Props> = ({
@@ -16,8 +17,21 @@ export const Panel: FC<Props> = ({
   setSelectedUser,
   selectedUser,
   setQuery,
+  setSelectedCategory,
 }) => {
   const [input, setInput] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+
+  const handleSelectCategory = (value: number | null) => {
+    setSelectedCategory(value);
+  };
+
+  const handleResetAllFilters = () => {
+    setSelectedCategory(null);
+    setSelectedUser(null);
+    setQuery('');
+    setInput('');
+  };
 
   return (
     <nav className="panel">
@@ -76,6 +90,10 @@ export const Panel: FC<Props> = ({
               data-cy="ClearButton"
               type="button"
               className="delete"
+              onClick={() => {
+                setInput('');
+                setQuery('');
+              }}
             />
           </span>
         </p>
@@ -85,7 +103,13 @@ export const Panel: FC<Props> = ({
         <a
           href="#/"
           data-cy="AllCategories"
-          className="button is-success mr-6 is-outlined"
+          className={cn('button is-success mr-6', {
+            'is-outlined': selectedCategoryId !== null,
+          })}
+          onClick={() => {
+            handleSelectCategory(null);
+            setSelectedCategoryId(null);
+          }}
         >
           All
         </a>
@@ -94,9 +118,15 @@ export const Panel: FC<Props> = ({
           catigories.map(category => (
             <a
               data-cy="Category"
-              className="button mr-2 my-1 is-info"
+              className={cn('button mr-2 my-1', {
+                'is-info': selectedCategoryId === category.id,
+              })}
               href="#/"
               key={category.id}
+              onClick={() => {
+                handleSelectCategory(category.id);
+                setSelectedCategoryId(category.id);
+              }}
             >
               {category.title}
             </a>
@@ -109,7 +139,7 @@ export const Panel: FC<Props> = ({
           data-cy="ResetAllButton"
           href="#/"
           className="button is-link is-outlined is-fullwidth"
-
+          onClick={handleResetAllFilters}
         >
           Reset all filters
         </a>

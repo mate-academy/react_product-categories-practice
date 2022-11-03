@@ -45,27 +45,37 @@ export const App: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<Users | null>(null);
   const [visibleList, setVisibleList] = useState<FullList[] | null>(null);
   const [query, setQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const filterBySelectedUser = () => {
     setVisibleList(() => {
-      if (selectedUser === null && query === '') {
+      if (selectedUser === null && query === '' && selectedCategory === null) {
         return setProductsWithUsersAndCatigories();
       }
 
-      return fullList?.filter(item => {
-        if (item.userName && selectedUser) {
+      if (fullList) {
+        return fullList.filter(item => {
+          if (item.name) {
+            return item.name.toLowerCase().includes(query.toLowerCase());
+          }
+
+          return false;
+        }).filter(item => {
+          if (selectedUser === null) {
+            return item;
+          }
+
           return item.userName === selectedUser?.name;
-        }
+        }).filter(item => {
+          if (selectedCategory === null) {
+            return item;
+          }
 
-        return false;
-      }).filter(item => {
-        console.log('here');
-        if (item.name) {
-          return item.name.includes(query);
-        }
+          return item.categoryId === selectedCategory;
+        }) || null;
+      }
 
-        return false;
-      }) || null;
+      return null;
     });
   };
 
@@ -76,7 +86,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     filterBySelectedUser();
-  }, [selectedUser, query]);
+  }, [selectedUser, query, selectedCategory]);
 
   return (
     <div className="section">
@@ -90,6 +100,7 @@ export const App: React.FC = () => {
             setSelectedUser={setSelectedUser}
             selectedUser={selectedUser}
             setQuery={setQuery}
+            setSelectedCategory={setSelectedCategory}
           />
         </div>
 
