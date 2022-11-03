@@ -1,11 +1,91 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.scss';
+import classNames from 'classnames';
+import usersFromServer from './api/users';
+import productsFromServer from './api/products';
+import categoriesFromServer from './api/categories';
 
-// import usersFromServer from './api/users';
-// import productsFromServer from './api/products';
-// import categoriesFromServer from './api/categories';
+interface Product {
+  id: number,
+  name: string,
+  categoryId: number,
+}
+
+type User = {
+  id: number,
+  name: string,
+  sex: string,
+};
+
+type Category = {
+  id: number,
+  title: string,
+  icon: string,
+  ownerId: number,
+};
+
+interface ProductAndCategory extends Product {
+  category?: Category,
+}
+
+interface ProductWithUserAndCategory extends ProductAndCategory{
+  user?: User,
+}
+
+export const productAndCategory: ProductAndCategory[]
+ = productsFromServer.map(product => ({
+   ...product,
+   category: categoriesFromServer
+     .find(category => category.id === product.categoryId),
+ }));
+export const productWithUserAndCategory: ProductWithUserAndCategory[]
+ = productAndCategory.map(product => ({
+   ...product,
+   user: usersFromServer.find(user => user.id === product.category?.ownerId),
+ }));
 
 export const App: React.FC = () => {
+  const [preparedPoducts]
+  = useState<ProductWithUserAndCategory[]>(productWithUserAndCategory);
+  const [query, setQuery] = useState('');
+  const [person, setPerson] = useState('');
+
+  // const FilterUser = (user: User) => {
+  //   const visibleProducts = preparedPoducts
+  //     .filter(product => product.category?.ownerId === user.id);
+
+  //   return setpreparedPoducts(visibleProducts);
+  // };
+
+  const resetFilter = () => (setQuery(''));
+
+  const doesNameMatch = (product: ProductWithUserAndCategory) => {
+    switch (person) {
+      case 'Roma':
+        return product?.user?.name === 'Roma';
+      case 'Anna':
+        return product?.user?.name === 'Anna';
+      case 'Max':
+        return product?.user?.name === 'Max';
+      case 'John':
+        return product?.user?.name === 'John';
+
+      default:
+        return preparedPoducts;
+    }
+  };
+
+  const doesTitleMatch = (product: ProductWithUserAndCategory) => (product.name
+    .toLowerCase().includes(query.toLowerCase().trim()));
+
+  const veryVisible = preparedPoducts
+    .filter(product => doesTitleMatch(product) && doesNameMatch(product));
+
+  const resetAllFilter = () => {
+    setQuery('');
+    setPerson('');
+  };
+
   return (
     <div className="section">
       <div className="container">
@@ -22,28 +102,16 @@ export const App: React.FC = () => {
               >
                 All
               </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 1
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-                className="is-active"
-              >
-                User 2
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 3
-              </a>
+              {usersFromServer.map(user => (
+                <a
+                  data-cy="FilterUser"
+                  href="#/"
+                  key={user.id}
+                  onClick={() => setPerson(user.name)}
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -53,7 +121,9 @@ export const App: React.FC = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  value={query}
+                  onChange={(event) => (setQuery(event.target.value))}
+
                 />
 
                 <span className="icon is-left">
@@ -61,12 +131,15 @@ export const App: React.FC = () => {
                 </span>
 
                 <span className="icon is-right">
-                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <button
-                    data-cy="ClearButton"
-                    type="button"
-                    className="delete"
-                  />
+                  {query && (
+                    // eslint-disable-next-line jsx-a11y/control-has-associated-label
+                    <button
+                      data-cy="ClearButton"
+                      type="button"
+                      className="delete"
+                      onClick={resetFilter}
+                    />
+                  )}
                 </span>
               </p>
             </div>
@@ -117,93 +190,99 @@ export const App: React.FC = () => {
                 data-cy="ResetAllButton"
                 href="#/"
                 className="button is-link is-outlined is-fullwidth"
-
+                onClick={resetAllFilter}
               >
                 Reset all filters
               </a>
             </div>
           </nav>
         </div>
-
         <div className="box table-container">
-          <p data-cy="NoMatchingMessage">
-            No products matching selected criteria
-          </p>
-
+          {query && veryVisible.length === 0
+            ? (
+              <p data-cy="NoMatchingMessage">
+                No products matching selected criteria
+              </p>
+            ) : null}
           <table
             data-cy="ProductTable"
             className="table is-striped is-narrow is-fullwidth"
           >
-            <thead>
-              <tr>
-                <th>
-                  <span className="is-flex is-flex-wrap-nowrap">
-                    ID
+            {veryVisible.length !== 0 && (
+              <thead>
+                <tr>
+                  <th>
+                    <span className="is-flex is-flex-wrap-nowrap">
+                      ID
 
-                    <a href="#/">
-                      <span className="icon">
-                        <i data-cy="SortIcon" className="fas fa-sort" />
-                      </span>
-                    </a>
-                  </span>
-                </th>
+                      <a href="#/">
+                        <span className="icon">
+                          <i data-cy="SortIcon" className="fas fa-sort" />
+                        </span>
+                      </a>
+                    </span>
+                  </th>
 
-                <th>
-                  <span className="is-flex is-flex-wrap-nowrap">
-                    Product
+                  <th>
+                    <span className="is-flex is-flex-wrap-nowrap">
+                      Product
 
-                    <a href="#/">
-                      <span className="icon">
-                        <i data-cy="SortIcon" className="fas fa-sort-down" />
-                      </span>
-                    </a>
-                  </span>
-                </th>
+                      <a href="#/">
+                        <span className="icon">
+                          <i data-cy="SortIcon" className="fas fa-sort-down" />
+                        </span>
+                      </a>
+                    </span>
+                  </th>
 
-                <th>
-                  <span className="is-flex is-flex-wrap-nowrap">
-                    Category
+                  <th>
+                    <span className="is-flex is-flex-wrap-nowrap">
+                      Category
 
-                    <a href="#/">
-                      <span className="icon">
-                        <i data-cy="SortIcon" className="fas fa-sort-up" />
-                      </span>
-                    </a>
-                  </span>
-                </th>
+                      <a href="#/">
+                        <span className="icon">
+                          <i data-cy="SortIcon" className="fas fa-sort-up" />
+                        </span>
+                      </a>
+                    </span>
+                  </th>
 
-                <th>
-                  <span className="is-flex is-flex-wrap-nowrap">
-                    User
+                  <th>
+                    <span className="is-flex is-flex-wrap-nowrap">
+                      User
 
-                    <a href="#/">
-                      <span className="icon">
-                        <i data-cy="SortIcon" className="fas fa-sort" />
-                      </span>
-                    </a>
-                  </span>
-                </th>
-              </tr>
-            </thead>
+                      <a href="#/">
+                        <span className="icon">
+                          <i data-cy="SortIcon" className="fas fa-sort" />
+                        </span>
+                      </a>
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+            )}
 
             <tbody>
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  1
-                </td>
+              {veryVisible.map(product => (
+                <tr data-cy="Product" key={product.id}>
+                  <td className="has-text-weight-bold" data-cy="ProductId">
+                    {product.id}
+                  </td>
+                  <td data-cy="ProductName">{product.name}</td>
+                  <td data-cy="ProductCategory">{`${product.category?.icon} - ${product.category?.title}`}</td>
+                  <td
+                    data-cy="ProductUser"
+                    className={classNames({
+                      'has-text-link': product.user?.sex === 'm',
+                      'has-text-danger': product.user?.sex === 'f',
+                    })}
+                  >
+                    {product.user?.name}
+                  </td>
+                </tr>
+              ))}
 
-                <td data-cy="ProductName">Milk</td>
-                <td data-cy="ProductCategory">🍺 - Drinks</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Max
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
+              {/* <tr data-cy="Product">
                 <td className="has-text-weight-bold" data-cy="ProductId">
                   2
                 </td>
@@ -233,7 +312,7 @@ export const App: React.FC = () => {
                 >
                   Roma
                 </td>
-              </tr>
+              </tr> */}
             </tbody>
           </table>
         </div>
