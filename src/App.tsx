@@ -1,11 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
+import cn from 'classnames';
 import './App.scss';
 
-// import usersFromServer from './api/users';
-// import productsFromServer from './api/products';
-// import categoriesFromServer from './api/categories';
+import usersFromServer from './api/users';
+import productsFromServer from './api/products';
+import categoriesFromServer from './api/categories';
+import { CompoundProduct } from './types/Product';
+import { User } from './types/User';
+
+const compoundProducts = productsFromServer.map(product => {
+  const foundCategory = categoriesFromServer.find(
+    category => category.id === product.categoryId,
+  ) || null;
+
+  const foundUser = usersFromServer.find(
+    user => user.id === foundCategory?.ownerId,
+  ) || null;
+
+  return {
+    ...product,
+    category: foundCategory,
+    user: foundUser,
+  };
+});
 
 export const App: React.FC = () => {
+  const [products] = useState<CompoundProduct[]>(compoundProducts);
+  const [owner, setOwner] = useState<User | null>(null);
+
+  const filteredProducts = products.filter(product => {
+    if (owner === null) {
+      return product;
+    }
+
+    const { user } = product;
+
+    return user ? user.id === owner.id : false;
+  });
+
   return (
     <div className="section">
       <div className="container">
@@ -19,31 +51,33 @@ export const App: React.FC = () => {
               <a
                 data-cy="FilterAllUsers"
                 href="#/"
+                className={cn(
+                  {
+                    'is-active': !owner,
+                  },
+                )}
+                onClick={() => setOwner(null)}
               >
                 All
               </a>
 
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 1
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-                className="is-active"
-              >
-                User 2
-              </a>
-
-              <a
-                data-cy="FilterUser"
-                href="#/"
-              >
-                User 3
-              </a>
+              {usersFromServer.map(user => (
+                <a
+                  data-cy="FilterUser"
+                  href="#/"
+                  key={user.id}
+                  className={cn(
+                    {
+                      'is-active': user.id === owner?.id,
+                    },
+                  )}
+                  onClick={() => {
+                    setOwner(user);
+                  }}
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -187,53 +221,36 @@ export const App: React.FC = () => {
             </thead>
 
             <tbody>
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  1
-                </td>
+              {filteredProducts.map(product => {
+                const { category, user } = product;
 
-                <td data-cy="ProductName">Milk</td>
-                <td data-cy="ProductCategory">🍺 - Drinks</td>
+                return (
+                  <tr data-cy="Product" key={product.id}>
+                    <td className="has-text-weight-bold" data-cy="ProductId">
+                      {product.id}
+                    </td>
 
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Max
-                </td>
-              </tr>
+                    <td data-cy="ProductName">{product.name}</td>
+                    {category && (
+                      <td data-cy="ProductCategory">{`${category.icon} - ${category.title}`}</td>
+                    )}
 
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  2
-                </td>
-
-                <td data-cy="ProductName">Bread</td>
-                <td data-cy="ProductCategory">🍞 - Grocery</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-danger"
-                >
-                  Anna
-                </td>
-              </tr>
-
-              <tr data-cy="Product">
-                <td className="has-text-weight-bold" data-cy="ProductId">
-                  3
-                </td>
-
-                <td data-cy="ProductName">iPhone</td>
-                <td data-cy="ProductCategory">💻 - Electronics</td>
-
-                <td
-                  data-cy="ProductUser"
-                  className="has-text-link"
-                >
-                  Roma
-                </td>
-              </tr>
+                    {user && (
+                      <td
+                        data-cy="ProductUser"
+                        className={cn(
+                          {
+                            'has-text-link': user.sex === 'm',
+                            'has-text-danger': user.sex === 'f',
+                          },
+                        )}
+                      >
+                        {user.name}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
