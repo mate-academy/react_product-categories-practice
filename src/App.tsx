@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import cn from 'classnames';
 
 import './App.scss';
-import { Category } from './types/categorie';
+import { Category } from './types/Categorie';
 import { PreparedProduct } from './types/PreparedProduct';
-import { Product } from './types/product';
-import { User } from './types/user';
+import { Product } from './types/Product';
+import { User } from './types/User';
 
 import usersFromServer from './api/users';
 import productsFromServer from './api/products';

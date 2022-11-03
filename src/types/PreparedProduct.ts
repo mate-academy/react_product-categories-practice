@@ -1,6 +1,6 @@
-import { Category } from './categorie';
-import { Product } from './product';
-import { User } from './user';
+import { Category } from './Categorie';
+import { Product } from './Product';
+import { User } from './User';
 
 export interface PreparedProduct extends Product {
   category: Category | null;
