@@ -24,7 +24,7 @@ const categoriesFilter = {
 
 let failed = false;
 
-Cypress.on('fail', (e) => {
+Cypress.on('fail', e => {
   failed = true;
   throw e;
 });
@@ -38,7 +38,7 @@ describe('', () => {
     cy.visit('/');
   });
 
-  // If you want to skip some tests just add .skip after the describe
+  // If you want to skip some tests just add  after the describe
 
   describe('Page by default', () => {
     it('should show ProductTable', () => {
@@ -50,36 +50,46 @@ describe('', () => {
     });
 
     it('should show products in the initial order', () => {
-      page.products().eq(0)
-        .byDataCy('ProductName')
-        .should('have.text', 'Milk');
+      page.products().eq(0).byDataCy('ProductName').should('have.text', 'Milk');
 
-      page.products().eq(1)
+      page
+        .products()
+        .eq(1)
         .byDataCy('ProductName')
         .should('have.text', 'Bread');
 
-      page.products().eq(8)
+      page
+        .products()
+        .eq(8)
         .byDataCy('ProductName')
         .should('have.text', 'Apples');
     });
 
     it('should show a category with Icon for each product', () => {
-      page.products().eq(0)
+      page
+        .products()
+        .eq(0)
         .byDataCy('ProductCategory')
         .should('have.text', '🍺 - Drinks');
 
-      page.products().eq(1)
+      page
+        .products()
+        .eq(1)
         .byDataCy('ProductCategory')
         .should('have.text', '🍞 - Grocery');
     });
 
     it('should have a user name of correct color', () => {
-      page.products().eq(0)
+      page
+        .products()
+        .eq(0)
         .byDataCy('ProductUser')
         .should('have.text', 'Roma')
-        .and('have.class', 'has-text-link')
+        .and('have.class', 'has-text-link');
 
-      page.products().eq(1)
+      page
+        .products()
+        .eq(1)
         .byDataCy('ProductUser')
         .should('have.text', 'Anna')
         .and('have.class', 'has-text-danger');
@@ -101,24 +111,19 @@ describe('', () => {
     });
 
     it('should not have active users by default', () => {
-      cy.get('[data-cy="FilterUser"].is-active')
-        .should('not.exist');
+      cy.get('[data-cy="FilterUser"].is-active').should('not.exist');
     });
 
     it('should allow to select a user', () => {
-      userFilter.users().eq(0)
-        .click()
-        .should('have.class', 'is-active');
+      userFilter.users().eq(0).click().should('have.class', 'is-active');
     });
 
     it('should highlight only selected user', () => {
       userFilter.users().eq(0).click();
 
-      userFilter.allLink()
-        .should('not.have.class', 'is-active');
+      userFilter.allLink().should('not.have.class', 'is-active');
 
-      cy.get('[data-cy="FilterUser"].is-active')
-        .should('have.length', 1);
+      cy.get('[data-cy="FilterUser"].is-active').should('have.length', 1);
     });
 
     it('should show products of a selected user', () => {
@@ -126,11 +131,9 @@ describe('', () => {
 
       page.products().should('have.length', 2);
 
-      page.products().eq(0).byDataCy('ProductName')
-        .should('have.text', 'Milk');
+      page.products().eq(0).byDataCy('ProductName').should('have.text', 'Milk');
 
-      page.products().eq(1).byDataCy('ProductName')
-        .should('have.text', 'Beer');
+      page.products().eq(1).byDataCy('ProductName').should('have.text', 'Beer');
     });
 
     it('should allow to select another user', () => {
@@ -138,13 +141,22 @@ describe('', () => {
 
       page.products().should('have.length', 5);
 
-      page.products().eq(0).byDataCy('ProductName')
+      page
+        .products()
+        .eq(0)
+        .byDataCy('ProductName')
         .should('have.text', 'Bread');
 
-      page.products().eq(2).byDataCy('ProductName')
+      page
+        .products()
+        .eq(2)
+        .byDataCy('ProductName')
         .should('have.text', 'Sugar');
 
-      page.products().eq(4).byDataCy('ProductName')
+      page
+        .products()
+        .eq(4)
+        .byDataCy('ProductName')
         .should('have.text', 'Apples');
     });
   });
@@ -159,9 +171,7 @@ describe('', () => {
     });
 
     it('should allow to enter some text', () => {
-      nameFilter.field()
-        .type('ck')
-        .should('have.value', 'ck');
+      nameFilter.field().type('ck').should('have.value', 'ck');
     });
 
     it('should show products matching the input value', () => {
@@ -169,10 +179,16 @@ describe('', () => {
 
       page.products().should('have.length', 2);
 
-      page.products().eq(0).byDataCy('ProductName')
+      page
+        .products()
+        .eq(0)
+        .byDataCy('ProductName')
         .should('have.text', 'Jacket');
 
-      page.products().eq(1).byDataCy('ProductName')
+      page
+        .products()
+        .eq(1)
+        .byDataCy('ProductName')
         .should('have.text', 'Socks');
     });
 
@@ -181,7 +197,10 @@ describe('', () => {
 
       page.products().should('have.length', 1);
 
-      page.products().eq(0).byDataCy('ProductName')
+      page
+        .products()
+        .eq(0)
+        .byDataCy('ProductName')
         .should('have.text', 'Apples');
     });
 
@@ -314,12 +333,13 @@ describe('', () => {
     });
 
     it('should not have active categories by default', () => {
-      cy.get('[data-cy="Category"].is-info')
-        .should('not.exist');
+      cy.get('[data-cy="Category"].is-info').should('not.exist');
     });
 
     it('should allow to select a category', () => {
-      categoriesFilter.categories().eq(0)
+      categoriesFilter
+        .categories()
+        .eq(0)
         .click()
         .should('have.class', 'is-info');
     });
@@ -329,9 +349,21 @@ describe('', () => {
 
       page.products().should('have.length', 3);
 
-      page.products().eq(0).byDataCy('ProductCategory').should('have.text', '🍞 - Grocery');
-      page.products().eq(1).byDataCy('ProductCategory').should('have.text', '🍞 - Grocery');
-      page.products().eq(2).byDataCy('ProductCategory').should('have.text', '🍞 - Grocery');
+      page
+        .products()
+        .eq(0)
+        .byDataCy('ProductCategory')
+        .should('have.text', '🍞 - Grocery');
+      page
+        .products()
+        .eq(1)
+        .byDataCy('ProductCategory')
+        .should('have.text', '🍞 - Grocery');
+      page
+        .products()
+        .eq(2)
+        .byDataCy('ProductCategory')
+        .should('have.text', '🍞 - Grocery');
     });
 
     it('should not have All Categories Button active is a category is selected', () => {
@@ -354,10 +386,26 @@ describe('', () => {
 
       page.products().should('have.length', 4);
 
-      page.products().eq(0).byDataCy('ProductCategory').should('have.text', '🍺 - Drinks');
-      page.products().eq(1).byDataCy('ProductCategory').should('have.text', '🍏 - Fruits');
-      page.products().eq(2).byDataCy('ProductCategory').should('have.text', '🍺 - Drinks');
-      page.products().eq(3).byDataCy('ProductCategory').should('have.text', '🍏 - Fruits');
+      page
+        .products()
+        .eq(0)
+        .byDataCy('ProductCategory')
+        .should('have.text', '🍺 - Drinks');
+      page
+        .products()
+        .eq(1)
+        .byDataCy('ProductCategory')
+        .should('have.text', '🍏 - Fruits');
+      page
+        .products()
+        .eq(2)
+        .byDataCy('ProductCategory')
+        .should('have.text', '🍺 - Drinks');
+      page
+        .products()
+        .eq(3)
+        .byDataCy('ProductCategory')
+        .should('have.text', '🍏 - Fruits');
     });
 
     it('should allow to unselect a category directly', () => {
@@ -408,8 +456,16 @@ describe('', () => {
 
       page.products().should('have.length', 2);
 
-      page.products().eq(0).byDataCy('ProductCategory').should('have.text', '🍺 - Drinks');
-      page.products().eq(1).byDataCy('ProductCategory').should('have.text', '🍺 - Drinks');
+      page
+        .products()
+        .eq(0)
+        .byDataCy('ProductCategory')
+        .should('have.text', '🍺 - Drinks');
+      page
+        .products()
+        .eq(1)
+        .byDataCy('ProductCategory')
+        .should('have.text', '🍺 - Drinks');
 
       page.products().eq(0).byDataCy('ProductUser').should('have.text', 'Roma');
       page.products().eq(1).byDataCy('ProductUser').should('have.text', 'Roma');
@@ -422,7 +478,11 @@ describe('', () => {
 
       page.products().should('have.length', 2);
 
-      page.products().eq(0).byDataCy('ProductName').should('have.text', 'Banana');
+      page
+        .products()
+        .eq(0)
+        .byDataCy('ProductName')
+        .should('have.text', 'Banana');
       page.products().eq(1).byDataCy('ProductName').should('have.text', 'Beer');
     });
 
@@ -434,7 +494,11 @@ describe('', () => {
 
       page.products().should('have.length', 1);
 
-      page.products().eq(0).byDataCy('ProductName').should('have.text', 'Banana');
+      page
+        .products()
+        .eq(0)
+        .byDataCy('ProductName')
+        .should('have.text', 'Banana');
     });
 
     it('should be reset with ResetAllFilters button', () => {
@@ -459,7 +523,9 @@ describe('', () => {
 
     describe('By ID', () => {
       it('should change the icon to sort-up after the first click', () => {
-        page.sortIcons().eq(0)
+        page
+          .sortIcons()
+          .eq(0)
           .click()
           .should('have.class', 'fa-sort-up')
           .and('not.have.class', 'fa-sort')
@@ -477,7 +543,9 @@ describe('', () => {
       });
 
       it('should change the icon to sort-down after the second click', () => {
-        page.sortIcons().eq(0)
+        page
+          .sortIcons()
+          .eq(0)
           .click()
           .click()
           .should('have.class', 'fa-sort-down')
@@ -486,9 +554,7 @@ describe('', () => {
       });
 
       it('should sort items in the descending order after the second click', () => {
-        page.sortIcons().eq(0)
-          .click()
-          .click();
+        page.sortIcons().eq(0).click().click();
 
         page.products().eq(0).byDataCy('ProductId').should('have.text', '9');
         page.products().eq(1).byDataCy('ProductId').should('have.text', '8');
@@ -496,7 +562,9 @@ describe('', () => {
       });
 
       it('should change icon to the default one after the third click', () => {
-        page.sortIcons().eq(0)
+        page
+          .sortIcons()
+          .eq(0)
           .click()
           .click()
           .click()
@@ -506,10 +574,7 @@ describe('', () => {
       });
 
       it('should reset the order after the third click', () => {
-        page.sortIcons().eq(0)
-          .click()
-          .click()
-          .click();
+        page.sortIcons().eq(0).click().click().click();
 
         page.products().eq(0).byDataCy('ProductId').should('have.text', '1');
         page.products().eq(1).byDataCy('ProductId').should('have.text', '2');
@@ -520,29 +585,29 @@ describe('', () => {
         page.sortIcons().eq(1).click();
         page.sortIcons().eq(0).click();
 
-        page.sortIcons().eq(0)
+        page
+          .sortIcons()
+          .eq(0)
           .should('have.class', 'fa-sort-up')
           .and('not.have.class', 'fa-sort')
           .and('not.have.class', 'fa-sort-down');
       });
 
       it('should show sort-up icon if previously sorted in the reversed order by another column', () => {
-        page.sortIcons().eq(1)
-          .click()
-          .click();
+        page.sortIcons().eq(1).click().click();
 
         page.sortIcons().eq(0).click();
 
-        page.sortIcons().eq(0)
+        page
+          .sortIcons()
+          .eq(0)
           .should('have.class', 'fa-sort-up')
           .and('not.have.class', 'fa-sort')
           .and('not.have.class', 'fa-sort-down');
       });
 
       it('should sort items in the ascending order if previously sorted in the reversed order by another column', () => {
-        page.sortIcons().eq(1)
-          .click()
-          .click();
+        page.sortIcons().eq(1).click().click();
 
         page.sortIcons().eq(0).click();
 
@@ -554,9 +619,7 @@ describe('', () => {
       it('should sort products of a selected user', () => {
         userFilter.users().eq(1).click();
 
-        page.sortIcons().eq(0)
-          .click()
-          .click();
+        page.sortIcons().eq(0).click().click();
 
         page.products().eq(0).byDataCy('ProductId').should('have.text', '9');
         page.products().eq(1).byDataCy('ProductId').should('have.text', '6');
@@ -568,9 +631,7 @@ describe('', () => {
       it('should sort products filtered by name', () => {
         nameFilter.field().type('k');
 
-        page.sortIcons().eq(0)
-          .click()
-          .click();
+        page.sortIcons().eq(0).click().click();
 
         page.products().eq(0).byDataCy('ProductId').should('have.text', '8');
         page.products().eq(1).byDataCy('ProductId').should('have.text', '4');
@@ -580,9 +641,7 @@ describe('', () => {
       it('should sort products of selected categories', () => {
         categoriesFilter.categories().eq(1).click();
 
-        page.sortIcons().eq(0)
-          .click()
-          .click();
+        page.sortIcons().eq(0).click().click();
 
         categoriesFilter.categories().eq(2).click();
         categoriesFilter.categories().eq(4).click();
@@ -598,7 +657,9 @@ describe('', () => {
 
     describe('By product name', () => {
       it('should change the icon to sort-up after the first click', () => {
-        page.sortIcons().eq(1)
+        page
+          .sortIcons()
+          .eq(1)
           .click()
           .should('have.class', 'fa-sort-up')
           .and('not.have.class', 'fa-sort')
@@ -610,13 +671,27 @@ describe('', () => {
 
         page.products().should('have.length', 9);
 
-        page.products().eq(0).byDataCy('ProductName').should('have.text', 'Apples');
-        page.products().eq(1).byDataCy('ProductName').should('have.text', 'Banana');
-        page.products().eq(8).byDataCy('ProductName').should('have.text', 'Sugar');
+        page
+          .products()
+          .eq(0)
+          .byDataCy('ProductName')
+          .should('have.text', 'Apples');
+        page
+          .products()
+          .eq(1)
+          .byDataCy('ProductName')
+          .should('have.text', 'Banana');
+        page
+          .products()
+          .eq(8)
+          .byDataCy('ProductName')
+          .should('have.text', 'Sugar');
       });
 
       it('should change the icon to sort-down after the second click', () => {
-        page.sortIcons().eq(1)
+        page
+          .sortIcons()
+          .eq(1)
           .click()
           .click()
           .should('have.class', 'fa-sort-down')
@@ -625,17 +700,29 @@ describe('', () => {
       });
 
       it('should sort items in the descending order after the second click', () => {
-        page.sortIcons().eq(1)
-          .click()
-          .click();
+        page.sortIcons().eq(1).click().click();
 
-        page.products().eq(0).byDataCy('ProductName').should('have.text', 'Sugar');
-        page.products().eq(1).byDataCy('ProductName').should('have.text', 'Socks');
-        page.products().eq(8).byDataCy('ProductName').should('have.text', 'Apples');
+        page
+          .products()
+          .eq(0)
+          .byDataCy('ProductName')
+          .should('have.text', 'Sugar');
+        page
+          .products()
+          .eq(1)
+          .byDataCy('ProductName')
+          .should('have.text', 'Socks');
+        page
+          .products()
+          .eq(8)
+          .byDataCy('ProductName')
+          .should('have.text', 'Apples');
       });
 
       it('should change icon to the default one after the third click', () => {
-        page.sortIcons().eq(1)
+        page
+          .sortIcons()
+          .eq(1)
           .click()
           .click()
           .click()
@@ -645,93 +732,164 @@ describe('', () => {
       });
 
       it('should reset the order after the third click', () => {
-        page.sortIcons().eq(1)
-          .click()
-          .click()
-          .click();
+        page.sortIcons().eq(1).click().click().click();
 
-        page.products().eq(0).byDataCy('ProductName').should('have.text', 'Milk');
-        page.products().eq(1).byDataCy('ProductName').should('have.text', 'Bread');
-        page.products().eq(8).byDataCy('ProductName').should('have.text', 'Apples');
+        page
+          .products()
+          .eq(0)
+          .byDataCy('ProductName')
+          .should('have.text', 'Milk');
+        page
+          .products()
+          .eq(1)
+          .byDataCy('ProductName')
+          .should('have.text', 'Bread');
+        page
+          .products()
+          .eq(8)
+          .byDataCy('ProductName')
+          .should('have.text', 'Apples');
       });
 
       it('should show sort-up icon if previously sorted by another column', () => {
         page.sortIcons().eq(0).click();
         page.sortIcons().eq(1).click();
 
-        page.sortIcons().eq(1)
+        page
+          .sortIcons()
+          .eq(1)
           .should('have.class', 'fa-sort-up')
           .and('not.have.class', 'fa-sort')
           .and('not.have.class', 'fa-sort-down');
       });
 
       it('should show sort-up icon if previously sorted in the reversed order by another column', () => {
-        page.sortIcons().eq(0)
-          .click()
-          .click();
+        page.sortIcons().eq(0).click().click();
 
         page.sortIcons().eq(1).click();
 
-        page.sortIcons().eq(1)
+        page
+          .sortIcons()
+          .eq(1)
           .should('have.class', 'fa-sort-up')
           .and('not.have.class', 'fa-sort')
           .and('not.have.class', 'fa-sort-down');
       });
 
       it('should sort items in the ascending order if previously sorted in the reversed order by another column', () => {
-        page.sortIcons().eq(0)
-          .click()
-          .click();
+        page.sortIcons().eq(0).click().click();
 
         page.sortIcons().eq(1).click();
 
-        page.products().eq(0).byDataCy('ProductName').should('have.text', 'Apples');
-        page.products().eq(1).byDataCy('ProductName').should('have.text', 'Banana');
-        page.products().eq(8).byDataCy('ProductName').should('have.text', 'Sugar');
+        page
+          .products()
+          .eq(0)
+          .byDataCy('ProductName')
+          .should('have.text', 'Apples');
+        page
+          .products()
+          .eq(1)
+          .byDataCy('ProductName')
+          .should('have.text', 'Banana');
+        page
+          .products()
+          .eq(8)
+          .byDataCy('ProductName')
+          .should('have.text', 'Sugar');
       });
 
       it('should sort products of a selected user', () => {
         userFilter.users().eq(1).click();
 
-        page.sortIcons().eq(1)
-          .click()
-          .click();
+        page.sortIcons().eq(1).click().click();
 
-        page.products().eq(0).byDataCy('ProductName').should('have.text', 'Sugar');
-        page.products().eq(1).byDataCy('ProductName').should('have.text', 'Eggs');
-        page.products().eq(2).byDataCy('ProductName').should('have.text', 'Bread');
-        page.products().eq(3).byDataCy('ProductName').should('have.text', 'Banana');
-        page.products().eq(4).byDataCy('ProductName').should('have.text', 'Apples');
+        page
+          .products()
+          .eq(0)
+          .byDataCy('ProductName')
+          .should('have.text', 'Sugar');
+        page
+          .products()
+          .eq(1)
+          .byDataCy('ProductName')
+          .should('have.text', 'Eggs');
+        page
+          .products()
+          .eq(2)
+          .byDataCy('ProductName')
+          .should('have.text', 'Bread');
+        page
+          .products()
+          .eq(3)
+          .byDataCy('ProductName')
+          .should('have.text', 'Banana');
+        page
+          .products()
+          .eq(4)
+          .byDataCy('ProductName')
+          .should('have.text', 'Apples');
       });
 
       it('should sort products filtered by name', () => {
         nameFilter.field().type('k');
 
-        page.sortIcons().eq(1)
-          .click()
-          .click();
+        page.sortIcons().eq(1).click().click();
 
-        page.products().eq(0).byDataCy('ProductName').should('have.text', 'Socks');
-        page.products().eq(1).byDataCy('ProductName').should('have.text', 'Milk');
-        page.products().eq(2).byDataCy('ProductName').should('have.text', 'Jacket');
+        page
+          .products()
+          .eq(0)
+          .byDataCy('ProductName')
+          .should('have.text', 'Socks');
+        page
+          .products()
+          .eq(1)
+          .byDataCy('ProductName')
+          .should('have.text', 'Milk');
+        page
+          .products()
+          .eq(2)
+          .byDataCy('ProductName')
+          .should('have.text', 'Jacket');
       });
 
       it('should sort products of selected categories', () => {
         categoriesFilter.categories().eq(1).click();
 
-        page.sortIcons().eq(1)
-          .click()
-          .click();
+        page.sortIcons().eq(1).click().click();
 
         categoriesFilter.categories().eq(2).click();
         categoriesFilter.categories().eq(4).click();
 
-        page.products().eq(0).byDataCy('ProductName').should('have.text', 'Socks');
-        page.products().eq(1).byDataCy('ProductName').should('have.text', 'Milk');
-        page.products().eq(2).byDataCy('ProductName').should('have.text', 'Jacket');
-        page.products().eq(3).byDataCy('ProductName').should('have.text', 'Beer');
-        page.products().eq(4).byDataCy('ProductName').should('have.text', 'Banana');
-        page.products().eq(5).byDataCy('ProductName').should('have.text', 'Apples');
+        page
+          .products()
+          .eq(0)
+          .byDataCy('ProductName')
+          .should('have.text', 'Socks');
+        page
+          .products()
+          .eq(1)
+          .byDataCy('ProductName')
+          .should('have.text', 'Milk');
+        page
+          .products()
+          .eq(2)
+          .byDataCy('ProductName')
+          .should('have.text', 'Jacket');
+        page
+          .products()
+          .eq(3)
+          .byDataCy('ProductName')
+          .should('have.text', 'Beer');
+        page
+          .products()
+          .eq(4)
+          .byDataCy('ProductName')
+          .should('have.text', 'Banana');
+        page
+          .products()
+          .eq(5)
+          .byDataCy('ProductName')
+          .should('have.text', 'Apples');
       });
     });
   });
