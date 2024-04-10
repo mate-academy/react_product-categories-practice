@@ -1,4 +1,5 @@
 import React from 'react';
+import { useMemo } from 'react';
 import { SearchBar } from '../SearchBar/SearchBar';
 
 export const Filter = ({
@@ -11,10 +12,12 @@ export const Filter = ({
   selectedCategories,
   setSelectedCategories,
 }) => {
-  const selectedCount = selectedCategories.reduce(
-    (count, category) => (category.isSelected ? count + 1 : count),
-    0,
-  );
+  const selectedCount = useMemo(() => {
+    return selectedCategories.reduce(
+      (count, category) => (category.isSelected ? count + 1 : count),
+      0,
+    );
+  }, [selectedCategories]);
 
   const handleUser = v => {
     setSelectedUser(v);
@@ -25,22 +28,13 @@ export const Filter = ({
   };
 
   const handleCategoryChange = categoryId => {
-    if (selectedCount === categoryList.length) {
-      setSelectedCategories(prevSelectedCats =>
-        prevSelectedCats.map(selectedCategory => ({
-          ...selectedCategory,
-          isSelected: selectedCategory.id === categoryId,
-        })),
-      );
-    } else {
-      setSelectedCategories(prevSelectedCategories =>
-        prevSelectedCategories.map(selectedCategory =>
-          selectedCategory.id !== categoryId
-            ? selectedCategory
-            : { ...selectedCategory, isSelected: !selectedCategory.isSelected },
-        ),
-      );
-    }
+    setSelectedCategories(prevSelectedCategories =>
+      prevSelectedCategories.map(selectedCategory =>
+        selectedCategory.id !== categoryId
+          ? selectedCategory
+          : { ...selectedCategory, isSelected: !selectedCategory.isSelected },
+      ),
+    );
   };
 
   return (
