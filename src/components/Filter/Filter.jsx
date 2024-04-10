@@ -101,7 +101,6 @@ export const Filter = ({
           <a
             data-cy="Category"
             className={`button mr-2 my-1 ${
-              categoryList.length !== selectedCount &&
               selectedCategories.find(selCat => selCat.id === allCat.id)
                 .isSelected
                 ? 'is-info'

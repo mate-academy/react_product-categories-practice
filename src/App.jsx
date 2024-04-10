@@ -9,7 +9,7 @@ export const App = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [selectedCategories, setSelectedCategories] = useState(
-    categoriesFromServer.map(cat => ({ id: cat.id, isSelected: true })),
+    categoriesFromServer.map(cat => ({ id: cat.id, isSelected: false })),
   );
   const [sort, setSort] = useState({ type: 'ID', ascOrder: true });
 
