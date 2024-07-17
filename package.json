@@ -68,8 +68,7 @@
     "nodejsMajorVersion": "20",
     "tests": {
       "_comment": "Add `cypressComponents: true` to enable component tests",
-      "cypressComponents": false,
-      "cypress": false
+      "cypress": true
     }
   }
 }
