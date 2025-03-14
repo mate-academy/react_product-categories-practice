@@ -40,3 +40,6 @@ Implement as many options below as you can:
 - Send a message about solving the next step after each `push` and `deploy` (e.g. Task 3 is done)
 - If you are done with the required tasks please proceed with solving the optional once
 - Stop when the time is over (typically 2.5 hours from the start)
+
+## Deploy
+- To deploy the project, change the second line of code in package.json, specifically the homepage value, from "." to the repository name
